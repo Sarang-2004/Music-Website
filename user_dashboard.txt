@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="footer.css">
+    <title>User Dashboard</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.music-track {
+    background-color: #fff;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.music-track img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.music-track p {
+    margin: 0;
+    font-size: 18px;
+}
+
+.music-track audio {
+    width: 100%;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .music-track p {
+        font-size: 16px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <h2>Music Tracks</h2>
+    <?php
+    // Include database connector
+    include_once 'db_connector.php';
+
+    // Retrieve all music tracks from the database
+    $tracks_query = "SELECT * FROM music_tracks";
+    $tracks_result = $conn->query($tracks_query);
+
+    // Check if there are any tracks available
+    if ($tracks_result->num_rows > 0) {
+        $tracks = $tracks_result->fetch_all(MYSQLI_ASSOC);
+    } else {
+        $tracks = array();
+    }
+
+    // Function to display track details including image
+    function displayTrack($track)
+    {
+        echo "<div>";
+        echo "<h3>" . $track['title'] . "</h3>";
+        echo "<p>Artist: " . $track['artist'] . "</p>";
+        echo "<p>Album: " . $track['album'] . "</p>";
+        echo "<p>Genre: " . $track['genre'] . "</p>";
+        
+        // Display image if image path is available
+        if (!empty($track['image_path'])) {
+            echo "<img src='" . $track['image_path'] . "' alt='Track Image' style='max-width: 200px;'>";
+        } else {
+            echo "<p>No image available</p>";
+        }
+        
+        echo "<audio id='audio-" . $track['track_id'] . "' controls>";
+        echo "<source src='" . $track['file_path'] . "' type='audio/mpeg'>";
+        echo "Your browser does not support the audio element.";
+        echo "</audio>";
+        echo "</div>";
+    }
+
+    // Display each track
+    foreach ($tracks as $track) {
+        displayTrack($track);
+    }
+    ?>
+
+    <script>
+        // Get all audio elements
+        var audioElements = document.getElementsByTagName('audio');
+
+        // Pause all other audio elements when one starts playing
+        function pauseAllExcept(targetId) {
+            for (var i = 0; i < audioElements.length; i++) {
+                if (audioElements[i].id !== targetId) {
+                    audioElements[i].pause();
+                }
+            }
+        }
+
+        // Add event listeners to toggle play/pause and pause other audio elements
+        for (var i = 0; i < audioElements.length; i++) {
+            audioElements[i].addEventListener('play', function(event) {
+                pauseAllExcept(event.target.id);
+            });
+        }
+    </script>
+</body>
+</html>

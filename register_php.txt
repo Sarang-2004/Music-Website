@@ -1,0 +1,130 @@
+<?php
+// Include database connection
+include_once 'db_connector.php';
+
+// Initialize variables to empty values
+$username = $password = $email = "";
+$username_err = $password_err = $email_err = "";
+
+// Processing form data when form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate username
+    if (empty(trim($_POST["username"]))) {
+        $username_err = "Please enter a username.";
+    } else {
+        $username = trim($_POST["username"]);
+    }
+
+    // Validate password
+    if (empty(trim($_POST["password"]))) {
+        $password_err = "Please enter a password.";
+    } else {
+        $password = trim($_POST["password"]);
+    }
+
+    // Validate email
+    if (empty(trim($_POST["email"]))) {
+        $email_err = "Please enter an email.";
+    } else {
+        $email = trim($_POST["email"]);
+    }
+
+    // Check input errors before inserting into database
+    if (empty($username_err) && empty($password_err) && empty($email_err)) {
+        
+
+        // Insert the new user into the database
+        $sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $username, $password, $email);
+        if ($stmt->execute()) {
+            // Redirect to user dashboard
+            header("location: user_dashboard.php");
+            exit();
+        } else {
+            echo "Something went wrong. Please try again later.";
+        }
+        $stmt->close();
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"], /* Added email input type */
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+        <h2>User Registration</h2>
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" required>
+        <span class="error"><?php echo $username_err; ?></span>
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" required>
+        <span class="error"><?php echo $password_err; ?></span>
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" required>
+        <span class="error"><?php echo $email_err; ?></span>
+        <input type="submit" value="Register">
+    </form>
+</body>
+</html>
